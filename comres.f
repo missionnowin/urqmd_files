@@ -2,7 +2,7 @@ c $Id: comres.f,v 1.15 2003/06/29 14:26:36 weber Exp $
 c
 cdes This file contains definitions for the collision term
 c
-      integer maxbar,maxbra,minbar
+      integer maxbar,maxbra,minbar,maxbrf
       integer offmeson,maxmeson,pimeson,maxbrm,minnuc,mindel
       integer maxbrs1,maxbrs2
       integer numnuc,numdel,nucleon,maxnuc,maxdel
@@ -94,7 +94,7 @@ c add 2 decay channels for D*
       parameter (maxbrm=27) ! decay channels for meson resonances
       parameter (maxbrs1=10)! decay channels for $s=1$ baryon resonances
       parameter (maxbrs2=3) ! decay channels for $s=2$ baryon resonances
-      parameter (maxrbf=1)  ! decay channels for flucton
+      parameter (maxbrf=1)  ! decay channels for flucton
 
 c 
       integer mlt2it(maxmes-minmes) ! meson IDs sorted by multipletts
