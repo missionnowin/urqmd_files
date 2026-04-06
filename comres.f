@@ -46,18 +46,20 @@ c strangenes.ne.0 baryon resonances
       parameter (minome=mincas+numcas)   ! ID of lowest omega state
       parameter (maxome=minome+numome-1) ! ID of highest omega state
 
-c Charmed Baryons + flucton
+c Charmed Baryons
 
       integer minlamc,numlamc,maxlamc
-      integer minfluc,numfluc,maxfluc
 
-      parameter (numlamc=1) ! Number of Lambda_c states
+      parameter (numlamc=1)  ! Number of Lambda_c states
       parameter (minlamc=maxome+1) ! ID of lowest Lambda_C state
       parameter (maxlamc=minlamc+numlamc-1) ! ID of highest Lambda_C state
 
-      parameter (numfluc=1) ! Number of flucton states
-      parameter (minfluc=maxlamc+1) ! ID of lowest flucton state
-      parameter (maxfluc=minfluc+numfluc-1) ! ID of highest flucton state
+c Flucton
+      integer minfluc,numfluc,maxfluc
+
+      parameter (numfluc=1) ! Number of Flucton states
+      parameter (minfluc=maxlamc+1) ! ID of lowest Flucton state
+      parameter (maxfluc=minfluc+numfluc-1) ! ID of highest Flucton state
 
 
 c minbar & maxbar define the range of all baryons
@@ -78,7 +80,7 @@ c... avoid hard coded itypes
       parameter (iteta=102)    ! ID of eta
       parameter (itphi=109)    ! ID of phi
       parameter (itetapr=107)  ! ID of eta
-      parameter (itfluc=71) ! symbolic ID of flucton
+      parameter (itfluc=minfluc) ! symbolic ID of flucton
       parameter (pimeson=101)  ! ID of $\pi$
       parameter (nucleon=minnuc) ! ID of nucleon
 
@@ -92,6 +94,7 @@ c add 2 decay channels for D*
       parameter (maxbrm=27) ! decay channels for meson resonances
       parameter (maxbrs1=10)! decay channels for $s=1$ baryon resonances
       parameter (maxbrs2=3) ! decay channels for $s=2$ baryon resonances
+      parameter (maxrbf=1)  ! decay channels for flucton
 
 c 
       integer mlt2it(maxmes-minmes) ! meson IDs sorted by multipletts
@@ -110,12 +113,17 @@ c
       real*8 branres(0:maxbra,minnuc+1:maxdel)
       real*8 branbs1(0:maxbrs1,minlam+1:maxsig)
       real*8 branbs2(0:maxbrs2,mincas+1:maxcas)
+      real*8 branfluc(0:maxbrf,minfluc:maxfluc)
+
       integer Jres(minbar:maxbar)
       integer Jmes(minmes:maxmes)
       integer pares(minbar:maxbar),pames(minmes:maxmes)
       integer Isores(minbar:maxbar), Isomes(minmes:maxmes)
+
       integer brtype(4,0:maxbra),bmtype(4,0:maxbrm)
       integer bs1type(4,0:maxbrs1),bs2type(4,0:maxbrs2)
+      integer bftype(4,0:maxbrf)
+      
       real*8 massmes(minmes:maxmes)
       real*8 mmesmn(minmes:maxmes)
       real*8 widmes(minmes:maxmes)
@@ -126,12 +134,13 @@ c
       integer lbs1(0:maxbrs1,minlam+1:maxsig)
       integer lbs2(0:maxbrs2,mincas+1:maxcas)
       integer lbm(0:maxbrm,minmes+1:maxmes)
+      integer lbf(0:maxbrf,minfluc:maxfluc)
 
       common /resonances/ massres,widres,massmes,widmes,mmesmn,
-     ,                    branres,branmes,branbs1,branbs2,
-     ,                    bs1type,bs2type,lbs1,lbs2,lbm,
-     ,                    jres,jmes,lbr,brtype,pares,pames,
-     ,                    bmtype,
+     ,                    branres,branmes,branbs1,branbs2,branfluc,          
+     ,                    bs1type,bs2type,bmtype,bftype,
+     ,                    lbs1,lbs2,lbm,lbf,
+     ,                    jres,jmes,lbr,brtype,pares,pames, 
      ,                    Isores,Isomes,strres,strmes,mlt2it,
      ,                    chrmres,chrmmes
 

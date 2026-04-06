@@ -82,7 +82,7 @@ c Omega
 c     Lambda_c
      @             0.,
 c flucton
-     @             0.100/
+     @             0./
 
 
       data massmes/
@@ -1292,7 +1292,99 @@ C####C##1#########2#########3#########4#########5#########6#########7##
       endif
       return ! spin of particle i
       end
+C####C##1#########2#########3#########4#########5#########6#########7##
+      integer function flbr(i,iir)
+      implicit none
+      integer i,iir,ir,l
+      include 'comres.f'
 
+      ir=iabs(iir)
 
+      if (ir.gt.minnuc .and. ir.le.maxdel) then
+         l=lbr(i,ir)
+      else if (ir.gt.minlam .and. ir.le.maxsig) then
+         l=lbs1(i,ir)
+      else if (ir.gt.mincas .and. ir.le.maxcas) then
+         l=lbs2(i,ir)
+      else if (ir.gt.minmes .and. ir.le.maxmes) then
+         l=lbm(i,ir)
+      else if (ir.ge.minfluc .and. ir.le.maxfluc) then
+         l=0
+      else
+         write(6,*) 'error flbr',i,ir,iir,ir
+         stop 137
+      endif
 
+      flbr=l
+      return
+      end
+C####C##1#########2#########3#########4#########5#########6#########7##
+      real*8 function fbran(i,iir)
+      implicit none
+      integer i,iir,ir
+      real*8 b
+      include 'comres.f'
 
+      ir=iabs(iir)
+
+      if (ir.gt.minnuc .and. ir.le.maxdel) then
+         b=branres(i,ir)
+      else if (ir.gt.minlam .and. ir.le.maxsig) then
+         b=branbs1(i,ir)
+      else if (ir.gt.mincas .and. ir.le.maxcas) then
+         b=branbs2(i,ir)
+      else if (ir.gt.minmes .and. ir.le.maxmes) then
+         b=branmes(i,ir)
+      else if (ir.ge.minfluc .and. ir.le.maxfluc) then
+         b=0.d0
+      else
+         write(6,*) 'error fbran',i,ir,iir,ir
+         stop 137
+      endif
+
+      fbran=b
+      return
+      end
+C####C##1#########2#########3#########4#########5#########6#########7##
+      subroutine b3type(i,j,bi,b1,b2,b3,b4)
+      implicit none
+      integer ia,i,j,b1,b2,b3,b4
+      real*8 bi
+      include 'comres.f'
+
+      ia=iabs(i)
+
+      if (ia.gt.minmes) then
+         bi=branmes(j,ia)
+         b1=bmtype(1,j)
+         b2=bmtype(2,j)
+         b3=bmtype(3,j)
+         b4=bmtype(4,j)
+      else if (ia.gt.minnuc .and. ia.le.maxdel) then
+         bi=branres(j,ia)
+         b1=brtype(1,j)
+         b2=brtype(2,j)
+         b3=brtype(3,j)
+         b4=brtype(4,j)
+      else if (ia.gt.minlam .and. ia.le.maxsig) then
+         bi=branbs1(j,ia)
+         b1=bs1type(1,j)
+         b2=bs1type(2,j)
+         b3=bs1type(3,j)
+         b4=bs1type(4,j)
+      else if (ia.gt.mincas .and. ia.le.maxcas) then
+         bi=branbs2(j,ia)
+         b1=bs2type(1,j)
+         b2=bs2type(2,j)
+         b3=bs2type(3,j)
+         b4=bs2type(4,j)
+      else
+         bi=0.d0
+         b1=0
+         b2=0
+         b3=0
+         b4=0
+      endif
+
+      return
+      end
