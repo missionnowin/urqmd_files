@@ -180,10 +180,10 @@ c     VERSION NUMBER of SIGTAB
 ccccccccccccccccccccccccccccccccccccccc
 c
 
-      parameter (maxreac = 15) ! maximum number of collision classes
+      parameter (maxreac = 16) ! maximum number of collision classes
       parameter (maxpsig = 21) ! maximum number of cross 
                                ! sections per class
-      parameter (nsigs = 10)   ! number of tabulated cross sections
+      parameter (nsigs = 12)   ! number of tabulated cross sections
 
       PARAMETER (ITBLSZ= 100)  ! table size of cross section tables
 
