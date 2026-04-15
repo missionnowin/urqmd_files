@@ -178,7 +178,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       entry getirg(ii,iim,iip)
 c
 cinput ii       : particle ID
-coutput iim,iip : minimal and maximal itype of particle's class
+coutput iim,iip : minimal and maximal itype of particle class
 c
 c Determine which range (acc. to {\tt getrange}) particle 
 c {\tt ii} belongs to.
