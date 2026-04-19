@@ -114,6 +114,13 @@ C        Check if second particle is baryon
 C        (with zero amount of netstrangeness) ?
 C        e.g. pion-nucleon case
 C 
+c Flucton formation from meson-baryon is not physical; skip to
+c prevent branres/branbs1 crashes if a flucton appears as i2.
+      else if(is.eq.0.and.iabs(i2).ge.minfluc
+     &        .and.iabs(i2).le.maxfluc)then
+         sig=0d0
+         gam=0d0
+         return
       else if(is.eq.0.and.iabs(i2).le.maxbar)then
 c... (anti-)N*,D*
 c         write(*,*)"anndec", gam
@@ -157,6 +164,13 @@ c
          if(iabs(i1).ge.minmes)then ! meson dec. 
             call anndex(1,m1,i1,iz1,m2,i2,iz2,sqrts,sig,gam,
      .           maxbrm ,minmes+1,maxmes,bmtype,branmes)
+
+
+         else if(iabs(i1).ge.minfluc.and.iabs(i1).le.maxfluc)then
+c Flucton decay: F -> N+N (dominant) or F -> N+N+pi (subleading).
+c Uses its own branching tables bftype / branfluc.
+            call anndex(1,m1,i1,iz1,m2,i2,iz2,sqrts,sig,gam,
+     .           maxbrf,minfluc,maxfluc,bftype,branfluc)
 
 
          else if(is.eq.0)then   ! n*,d,d*

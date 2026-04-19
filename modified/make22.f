@@ -111,7 +111,8 @@ c      if(i1+i2.gt.2)write(6,*)'make22:',i1,i2
       goto(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,9,17,9,17,20,
      , 9,13,23,15,12,26,27,15,14,100,29,100,14,15,14,36,36,13,14,
      , 13,41,42,43,44,45,46,47,48,49,50,51,52,53,54,
-     , 13,56,57,58,59,60,61,62,63,64)io
+     , 13,56,57,58,59,60,61,62,63,64,
+     , 65,66,67)io
       
       write(6,*)'make22: unknown channel requested io:',io 
       write(6,*)'  ',e,i1,iz1,m1,i2,iz2,m2
@@ -3093,6 +3094,92 @@ c aXi- + an -> aSigma0  + aSigma+
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 
+ 65   continue
+c ===== Flucton-N total (no outgoing channel produced here) =====
+c When collclass=16 selects the total line via siglookup(13), UrQMD
+c still needs exit ids.  Default: elastic-like (flucton + N stays in).
+      i3=i1
+      i4=i2
+      iz3=iz1
+      iz4=iz2
+      m3=m1
+      m4=m2
+      if(m3.lt.mminit(i3)) m3=mminit(i3)
+      if(m4.lt.mminit(i4)) m4=mminit(i4)
+      goto 2001
+
+ 66   continue
+c ===== Flucton-N ELASTIC =====
+c Outgoing: same flucton + same nucleon, masses preserved.
+      if(switips)then
+         call swpizm(i1,iz1,m1,i2,iz2,m2)
+         switips=.false.
+      endif
+      call setizm(i1,iz1,m1,i2,iz2,m2,i3,iz3,m3,i4,iz4,m4)
+      if(mminit(i4)+mminit(i3).gt.e)then
+         write(6,*)'make22(F+N el): threshold violated'
+         write(6,*)'m3:',m3,mminit(i3)
+         write(6,*)'m4:',m4,mminit(i4)
+      endif
+      if(m3.lt.mminit(i3)) m3=mminit(i3)
+      if(m4.lt.mminit(i4)) m4=mminit(i4)
+      goto 2001
+
+ 67   continue
+c ===== Flucton + N BREAKUP : F + N -> N + N + N =====
+c
+c THIS is the cumulative-production mechanism.
+c In the flucton rest frame the two intrinsic nucleons have an
+c internal momentum p* = sqrt((M_F/2)^2 - m_N^2) ~ 0.35 GeV/c,
+c back-to-back.  The scattered nucleon kicks the flucton, and the
+c flucton then disintegrates.  In the COM of (F,N) all three final
+c nucleons populate phase space; after Lorentz boost to the lab
+c frame the flucton internal momentum is added/subtracted to each
+c intrinsic nucleon, producing a broad backward tail in the lab.
+c
+c Implemented as a 3-body uniform phase-space decay of the total
+c (F+N) invariant mass e into 3 nucleons.  {\tt nbodydec} handles
+c this correctly provided nexit/pnew/mstring/itypnew/i3new are set.
+c
+      if(e.le.3.d0*massit(minnuc)+1.d-4)then
+c Threshold violated: degrade to elastic
+         call setizm(i1,iz1,m1,i2,iz2,m2,i3,iz3,m3,i4,iz4,m4)
+         goto 2001
+      endif
+c Three outgoing nucleons: ids and masses
+      nstring1=1
+      nstring2=2
+      nexit=3
+c Provisional ids (will be refined by isospin coupling below)
+      itypnew(1)=isign(minnuc,ii1)
+      itypnew(2)=isign(minnuc,ii1)
+      itypnew(3)=isign(minnuc,ii2)
+c Isospin-3 (charge) distribution.  Flucton = pp cluster (iz=+2 per
+c constituent in UrQMD 2*I3 convention), so two of the final nucleons
+c inherit iz=+1 and the third is the original target nucleon.
+c iz1 is flucton isospin-3 (=+2 for pp), split as +1 and +1.
+      i3new(1)=sign(1,iz1)
+      i3new(2)=sign(1,iz1)
+      i3new(3)=iz2
+c Charge conservation check
+      if(i3new(1)+i3new(2)+i3new(3).ne.iz1+iz2)then
+c Adjust the last particle to conserve charge:
+         i3new(3)=iz1+iz2-i3new(1)-i3new(2)
+      endif
+      do i=1,3
+         pnew(5,i)=massit(iabs(itypnew(i)))
+         mstring(i)=pnew(5,i)
+         do j=1,4
+            pnew(j,i)=0d0
+            xnew(j,i)=0d0
+         enddo
+      enddo
+c Phase-space decay of total 4-momentum (e,0,0,0) into 3 bodies.
+c nbodydec populates pnew(1..4,1..nexit) in the rest frame.
+      call nbodydec(e)
+      return
+
+
  1008 continue
 c...get isospin-3 components
 
@@ -4302,7 +4389,8 @@ c     JS no Lambda_c scattering yet
      ,       11,12,13,14,15,16,17,18,19,9,21,22,23,24,
      ,       25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,
      ,       40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,
-     ,       55,56,57,58,59,60,61,62,63,64)io
+     ,       55,56,57,58,59,60,61,62,63,64,
+     ,       65,66,67)io
 
 
       write(6,*)'cross[x,z]: ',
@@ -6197,6 +6285,40 @@ c Xi + N -> Lambda/Sigma + Lambda/Sigma
       sig=0d0
       if(CTOption(59).lt.2) return
       sig=STREXWrapper(io,e,i1,iz1,i2,iz2)
+      return
+
+ 65   continue
+c ===== Flucton + N total cross section =====
+c Uses the tabulated flucton-N total (sigmainf line 13, sigmas line 13).
+c The tabulation is performed as a function of sqrt(s).
+      sig=siglookup(13,e)
+      if(sig.lt.0.d0) sig=0.d0
+      return
+
+ 66   continue
+c ===== Flucton + N ELASTIC cross section =====
+c Uses sigmainf line 14, sigmas line 14.
+      sig=siglookup(14,e)
+      if(sig.lt.0.d0) sig=0.d0
+c make elastic smoothly vanish below kinematic threshold
+      if(e.le.massit(minfluc)+massit(minnuc)+1.d-3)then
+         sig=0.d0
+      endif
+      return
+
+ 67   continue
+c ===== Flucton + N BREAKUP cross section =====
+c F + N -> N + N + N (3-body).  sigmainf line 15, sigmas line 15.
+c This is the cumulative-production channel: the flucton's two
+c internal nucleons are released with large back-to-back internal
+c momentum, so after the Lorentz boost from flucton rest frame
+c some fraction populates the backward hemisphere.
+      sig=siglookup(15,e)
+      if(sig.lt.0.d0) sig=0.d0
+c threshold = 3 m_N
+      if(e.le.3.d0*massit(minnuc)+1.d-3)then
+         sig=0.d0
+      endif
       return
 
  99   continue

@@ -1174,11 +1174,22 @@ cJS    No rescattering of photons
               
       if(i1.lt.i2)call swpizm(i1,iz1,d1,i2,iz2,d2)
 
-c baryon-antibaryon
+c flucton + nucleon  (fire before generic baryon matching, since
+c flucton satisfies i1<=maxbar too). Accept both particle/antiparticle.
       if(i1.ge.minfluc .and. i1.le.maxfluc .and. i2.eq.nucleon) then
          collclass=16
          return
       endif
+
+c flucton + flucton: not included yet (require collclass 0 so UrQMD
+c keeps them as two non-interacting baryons until they decay)
+      if((i1.ge.minfluc .and. i1.le.maxfluc) .and.
+     &   (i2.ge.minfluc .and. i2.le.maxfluc)) then
+         collclass=0
+         return
+      endif
+
+c baryon-antibaryon
 
       if(i1.le.maxbar.and.i2.le.maxbar.and.ityp1*ityp2.lt.0) then
          collclass=11
