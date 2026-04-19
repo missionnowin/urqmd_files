@@ -218,6 +218,17 @@ c modify sigfac due to color fluctuations
 c now get line-number for sigmaLN array in blockres
          isigline=collclass(ityp1,iso31,ityp2,iso32)
 
+c guard: if collclass returned 0 (undefined pair, e.g. flucton+flucton,
+c photon, PYTHIA pdg-id) then there is no cross section and no exit
+c channels. Without this, SigmaLn(*,*,0) reads out of bounds and
+c crossx/crossz is called with iline=0 -> STOP 137.
+         if(isigline.le.0) then
+            do 11 ii=0,maxpsig
+               sigma(ii)=0d0
+ 11         continue
+            return
+         endif
+
 c  number of exit-channels:
          nCh=SigmaLn(1,1,isigline)
 
@@ -1181,9 +1192,16 @@ c flucton satisfies i1<=maxbar too). Accept both particle/antiparticle.
          return
       endif
 
-c flucton + flucton: not included yet (require collclass 0 so UrQMD
-c keeps them as two non-interacting baryons until they decay)
-      if((i1.ge.minfluc .and. i1.le.maxfluc) .and.
+c flucton + ANYTHING-ELSE-BUT-NUCLEON: no parametrization yet. Return
+c collclass=0 so scatter.f's new guard treats it as a non-interacting
+c pair. This keeps the flucton alive until its lifetime expires and it
+c decays via anndec (F -> N+N or F -> N+N+pi). Covers: F+F, F+Delta,
+c F+N*, F+Lambda/Sigma/Xi, F+antibaryon, F+meson, F+charmonium, ...
+c Must come AFTER the F+N rule above, which is the only interacting
+c flucton channel. After swpizm the flucton (ityp=71) sits in slot 1
+c vs. any ordinary baryon (ityp<=maxlamc<71), but sits in slot 2 vs.
+c any meson (ityp>=minmes>=100). Check both slots to be safe.
+      if((i1.ge.minfluc .and. i1.le.maxfluc) .or.
      &   (i2.ge.minfluc .and. i2.le.maxfluc)) then
          collclass=0
          return
