@@ -1,3 +1,5 @@
+## Structure
+
 1. /all
 
 Unsorted + unmodified versions of UrQMD files
@@ -18,3 +20,7 @@ If we DO NOT need to modify that file, there no need to add that file to /modifi
 If we NEED to modify, copy file to both /base and /modified
 
 Empty /all means that work is completed.
+
+## Idea
+
+Introduce new particle type (baryon) flucton as a compact p-p cluster with full physics first for collision (scattering) and then for decaying such cluster.
