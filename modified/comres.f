@@ -94,7 +94,7 @@ c add 2 decay channels for D*
       parameter (maxbrm=27) ! decay channels for meson resonances
       parameter (maxbrs1=10)! decay channels for $s=1$ baryon resonances
       parameter (maxbrs2=3) ! decay channels for $s=2$ baryon resonances
-      parameter (maxbrf=1)  ! decay channels for flucton
+      parameter (maxbrf=2)  ! decay channels for flucton (NN, NNpi)
 
 c 
       integer mlt2it(maxmes-minmes) ! meson IDs sorted by multipletts
@@ -183,7 +183,7 @@ c
       parameter (maxreac = 16) ! maximum number of collision classes
       parameter (maxpsig = 21) ! maximum number of cross 
                                ! sections per class
-      parameter (nsigs = 12)   ! number of tabulated cross sections
+      parameter (nsigs = 16)   ! number of tabulated cross sections (+3 flucton rows = 15; reserve 1)
 
       PARAMETER (ITBLSZ= 100)  ! table size of cross section tables
 

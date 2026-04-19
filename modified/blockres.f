@@ -81,8 +81,9 @@ c Omega
      @             0.,
 c     Lambda_c
      @             0.,
-c flucton
-     @             0./
+c flucton: transient pp-cluster, decays to NN on strong timescale
+c (~1 fm/c  =>  Gamma ~ 200 MeV). Keep O(hbar*c/tau) = 0.20 GeV.
+     @             0.200/
 
 
       data massmes/
@@ -791,6 +792,29 @@ c                 Xi pi       Xi pi       La Kbar           Si Kbar
      @  63,101,0,0, 63,100,0,0, 41,-106,0,0, 54,-106,0,0/
 
 
+c flucton decay channels:
+c  index 0: reserved (branching sum / special)
+c  index 1: F -> N + N                 (two nucleons, dominant)
+c  index 2: F -> N + N + pi            (pion emission, subdominant)
+c Only flucton state index F = minfluc is defined.
+      data bftype/
+c                 (dummy)    N+N           N+N+pi
+     &    0,   0,   0,   0,
+     &    1,   1,   0,   0,
+     &    1,   1, 101,   0 /
+
+c Branching fractions for flucton -> channel i
+c Layout: branfluc(channel, ityp). Channel 0 = sum (always 1.0).
+      data branfluc/
+     &   1.d0, 0.85d0, 0.15d0 /
+
+c Relative orbital angular momentum L of decay products (NOT 2*L;
+c the *2 multiplier is applied in flbr, mirroring lbr convention).
+      data lbf/
+c           dummy  NN  NNpi
+     &       0,   0,   1 /
+
+
 c
 cccccccccccccccccccc pointer arrays for cross sections cccccccccccccccccc
 c general structure:
@@ -858,9 +882,11 @@ c14 M_charm meson scattering
 c15 charmonium baryon scattering
      .  3, -1, 55, 56, 10,  0,  0,  0,  0,  0,  0,0,0,0,0,0,0,0,0,0,0,
      .  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0,0,0,0,0,0,0,0,0,0,
-c16 flucton - nucleon scattering
-     . 2, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,
-     . 0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0/
+c16 flucton - nucleon scattering: (elastic, breakup F+N->N+N+N, excitation F+N->F*+N)
+c    use NEW iline numbers 65/66/67 that dispatch to new crossx/make22 code,
+c    NOT the generic io=13/14/15 (AQM elastic / AQM inelastic / string) paths.
+     .  3, 65, 66, 67, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,
+     .  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0/
 
 cccccccccccccccccccc cross sections info  ccccccccccccccccccccccccccccccccccccc
 c IMPORTANT:
@@ -922,7 +948,8 @@ c     proton - proton (neutron-neutron) elastic cs. index(inf)=4, index(sig)=4
       data(sigmascal(4,i),i=1,5) /
      @  1.0000000, 1.8964808, 0.0100000, 0.0000000, 0.0000000 /
 
-c flucton - nucleon total cs. indexinf13, indexsig13
+c flucton - nucleon total cs. sigmainf line 13, sigmas line 13.
+c (Used by new crossx label io=65 via siglookup(13,e).)
       data (sigmainf(13,i),i=1,20) /
      @ 13, 0, 0, 0, 0, 0, 0, 0, 0, 0,
      @  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /
@@ -930,7 +957,9 @@ c flucton - nucleon total cs. indexinf13, indexsig13
       data (sigmascal(13,i),i=1,5) /
      @ 1.0000000, 2.9380000, 0.0500000, 0.0000000, 0.0000000 /
 
-c flucton - nucleon elastic cs. indexinf14, indexsig14
+c flucton - nucleon elastic cs. sigmainf line 14, sigmas line 14.
+c 2-body outgoing (flucton + nucleon). iso3 unknowns via isocgk (-9).
+c Angular-distribution flag = 2 (non-identical, exp -A*s).
       data (sigmainf(14,i),i=1,20) /
      @ 14, 2, 2, 71, 1, 0, 0, 0, -9, -9,
      @  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /
@@ -938,9 +967,12 @@ c flucton - nucleon elastic cs. indexinf14, indexsig14
       data (sigmascal(14,i),i=1,5) /
      @ 1.0000000, 2.9380000, 0.0500000, 0.0000000, 0.0000000 /
 
-c flucton breakup / absorption: F + N -> N + N + N
+c flucton breakup: F + N -> N + N + N (3-body final state).
+c sigmainf line 15, sigmas line 15. Column 3 = -3 (flag for our
+c new N-body branch handled in make22 io=67). Column 4..6 = three
+c nucleons; iso3 via isocgk (-9).
       data (sigmainf(15,i),i=1,20) /
-     @ 15, 0, 3, 1, 1, 1, 0, 0, -9, -9,
+     @ 15, 0, -3, 1, 1, 1, 0, 0, -9, -9,
      @ -9, 0, 0, 0, 0, 0, 0, 0, 0, 0 /
      
       data (sigmascal(15,i),i=1,5) /
@@ -1081,13 +1113,13 @@ C####C##1#########2#########3#########4#########5#########6#########7##
       else if (ir.gt.minmes .and. ir.le.maxmes) then
          l=lbm(i,ir)
       else if (ir.ge.minfluc .and. ir.le.maxfluc) then
-         l=0
+         l=lbf(i,ir)
       else
          write(6,*) 'error flbr',i,ir,iir,ir
          stop 137
       endif
 
-      flbr=l
+      flbr=l*2 ! angular momentum of decay into ch.i(x2)
       return
       end
 
@@ -1109,7 +1141,7 @@ C####C##1#########2#########3#########4#########5#########6#########7##
       else if (ir.gt.minmes .and. ir.le.maxmes) then
          b=branmes(i,ir)
       else if (ir.ge.minfluc .and. ir.le.maxfluc) then
-         b=0.d0
+         b=branfluc(i,ir)
       else
          write(6,*) 'error fbran',i,ir,iir,ir
          stop 137
@@ -1250,6 +1282,9 @@ c  is Sigma + pi and not Lambda + pi
         mminit=massit(minsig)+massit(pimeson)+cut
       else if(ia.gt.mincas.and.ia.le.maxcas)then
         mminit=massit(mincas)+massit(pimeson)+cut
+      else if(ia.ge.minfluc.and.ia.le.maxfluc)then
+c flucton: decays to N+N, so minimum mass = 2*m_N + buffer
+        mminit=2.d0*massit(minnuc)+cut
       endif
       return  ! minimal mass of particle i
       end
@@ -1288,6 +1323,8 @@ C####C##1#########2#########3#########4#########5#########6#########7##
         mp=maxbrs1
       else if(ia.gt.mincas.and.ia.le.maxcas)then
         mp=maxbrs2
+      else if(ia.ge.minfluc.and.ia.le.maxfluc)then
+        mp=maxbrf
       else
         mp=0
       endif
@@ -1328,6 +1365,12 @@ c i=itype j=number of decay channel bi=branching ratio b1-4 outgoing itypes
          b2=bs2type(2,j)
          b3=bs2type(3,j)
          b4=bs2type(4,j)
+      else if (ia.ge.minfluc .and. ia.le.maxfluc) then
+         bi=branfluc(j,ia)
+         b1=bftype(1,j)
+         b2=bftype(2,j)
+         b3=bftype(3,j)
+         b4=bftype(4,j)
       else
          bi=0.d0
          b1=0
